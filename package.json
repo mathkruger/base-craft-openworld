@@ -1,0 +1,28 @@
+{
+  "name": "base-craft-openworld-game",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mathkruger/base-craft-openworld.git"
+  },
+  "author": "Matheus Kruger",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mathkruger/base-craft-openworld/issues"
+  },
+  "homepage": "https://github.com/mathkruger/base-craft-openworld#readme",
+  "devDependencies": {
+    "@babel/preset-env": "^7.16.4",
+    "del": "^2.0.2",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-csso": "^2.0.0",
+    "gulp-htmlmin": "^3.0.0",
+    "gulp-inject": "^5.0.5",
+    "gulp-uglify": "^2.0.0",
+    "gulp4-run-sequence": "^1.0.0"
+  }
+}
