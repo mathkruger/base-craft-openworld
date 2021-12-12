@@ -1,6 +1,8 @@
 const FPS = 10;
 const canvas = document.getElementById("main-game");
-const world = new World(canvas, 800, 600, FPS);
+const tileSize = 48;
+const width = 10;
+const height = 10;
+const world = new World(canvas, width, height, tileSize, FPS);
 
-console.log("Game Start!");
 world.start();

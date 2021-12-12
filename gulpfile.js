@@ -41,6 +41,11 @@ gulp.task('html', function () {
     .pipe(gulp.dest('./dist'));
 });
 
+gulp.task('resources', function () {
+  return gulp.src('./src/res/**')
+    .pipe(gulp.dest('./dist/res'));
+});
+
 gulp.task('clean', function (done) {
   del(['dist']);
   done();
@@ -51,7 +56,8 @@ gulp.task('default', function (done) {
     'clean',
     'scripts',
     'css',
-    'html'
+    'html',
+    'resources'
   );
   done();
 });
