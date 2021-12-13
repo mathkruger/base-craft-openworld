@@ -6,6 +6,7 @@ class CustomMap {
             layerThree: [],
         }
 
+        this.backgroundColor = "#fff";
         this.nextMapUp = "";
         this.nextMapDown = "";
         this.nextMapLeft = "";
@@ -16,6 +17,7 @@ class CustomMap {
         return fetch('/maps/' + mapName + '.json').then(x => {
             return x.json();
         }).then(result => {
+            this.backgroundColor = result.backgroundColor;
             this.layers.layerOne = result.layers.layerOne;
             this.layers.layerTwo = result.layers.layerTwo;
             this.layers.layerThree = result.layers.layerThree;

@@ -16,7 +16,7 @@ class World {
     }
 
     start() {
-        this.selectMap('map1');
+        this.selectMap('grassCity/map1');
     }
 
     input() {
@@ -33,21 +33,25 @@ class World {
 
     nextMap(direction) {
         switch (direction) {
-            case "up": 
+            case "up":
+                this.player.y = (this.height * this.tileSize) - this.player.height;
                 this.selectMap(this.map.nextMapUp);
-            break;
+                break;
 
-            case "right": 
+            case "right":
+                this.player.x = this.tileSize;
                 this.selectMap(this.map.nextMapRight);
-            break;
+                break;
 
-            case "down": 
+            case "down":
+                this.player.y = this.tileSize;
                 this.selectMap(this.map.nextMapDown);
-            break;
+                break;
 
-            case "left": 
+            case "left":
+                this.player.x = (this.width * this.tileSize) - this.player.width;
                 this.selectMap(this.map.nextMapLeft);
-            break;
+                break;
         }
     }
 
@@ -63,7 +67,8 @@ class World {
             this.input();
 
             this.renderer.stack = this.elements;
-            
+            this.player.isWrapping = false;
+
             this.interval = setInterval(() => {
                 this.update();
             }, this.fps);
@@ -82,31 +87,27 @@ class World {
             tree: new Sprite(0, 0, this.tileSize, this.tileSize, "tree")
         }
 
-        this.elements.push(new Entity(0, 0, this.height * this.tileSize, this.width * this.tileSize, "#70c8a0", 0, "rect"));
+        this.elements.push(new Entity(0, 0, this.height * this.tileSize, this.width * this.tileSize, this.map.backgroundColor, 0, "rect"));
 
         Object.keys(this.map.layers).forEach(key => {
             for (let x = 0; x < this.width * this.tileSize; x += this.tileSize) {
                 for (let y = 0; y < this.height * this.tileSize; y += this.tileSize) {
                     const indexX = (x / this.tileSize);
                     const indexY = (y / this.tileSize);
-    
+
                     switch (this.map.layers[key][indexY][indexX]) {
                         case "P":
-                            if (this.player) {
-                                this.player.x = indexX * this.tileSize;
-                                this.player.y = indexY * this.tileSize;
-                            }
-                            else {
+                            if (!this.player) {
                                 this.player = new PlayerEntity(indexX * this.tileSize, indexY * this.tileSize, this.tileSize, this.tileSize, "", 5, "sprite", sprites.player, this);
                             }
 
                             this.elements.push(this.player);
-                        break;
-    
+                            break;
+
                         case "G":
                             this.elements.push(new Entity(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.grass));
                             break;
-    
+
                         case "T":
                             this.elements.push(new Entity(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.tree, true));
                             break;
@@ -115,4 +116,4 @@ class World {
             }
         })
     }
-} 
+}

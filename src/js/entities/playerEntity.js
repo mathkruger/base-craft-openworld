@@ -10,6 +10,7 @@ class PlayerEntity extends Entity {
         this.collideDirection = "";
         this.isSolid = true;
         this.world = world;
+        this.isWrapping = false;
     }
 
     input() {
@@ -50,17 +51,23 @@ class PlayerEntity extends Entity {
     }
 
     checkOutBoundaries() {
-        if (this.x > this.world.width * this.world.tileSize) {
-            this.world.nextMap("right");
-        }
-        else if (this.x + this.width < 0) {
-            this.world.nextMap("left");
-        }
-        else if (this.y > this.world.height * this.world.tileSize) {
-            this.world.nextMap("down");
-        }
-        else if (this.y + this.height < 0) {
-            this.world.nextMap("up");
+        if (!this.isWrapping) {
+            if (this.x > this.world.width * this.world.tileSize) {
+                this.world.nextMap("right");
+                this.isWrapping = true;
+            }
+            else if (this.x + this.width < 0) {
+                this.world.nextMap("left");
+                this.isWrapping = true;
+            }
+            else if (this.y > this.world.height * this.world.tileSize) {
+                this.world.nextMap("down");
+                this.isWrapping = true;
+            }
+            else if (this.y + this.height < 0) {
+                this.world.nextMap("up");
+                this.isWrapping = true;
+            }
         }
     }
 
