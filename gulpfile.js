@@ -41,9 +41,14 @@ gulp.task('html', function () {
     .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('resources', function () {
-  return gulp.src('./src/res/**')
+gulp.task('resources', function (done) {
+  gulp.src('./src/res/**')
     .pipe(gulp.dest('./dist/res'));
+
+  gulp.src('./src/js/maps/**')
+    .pipe(gulp.dest('./dist/maps'));
+
+  done();
 });
 
 gulp.task('clean', function (done) {

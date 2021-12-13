@@ -1,5 +1,5 @@
 class PlayerEntity extends Entity {
-    constructor(x, y, height, width, color, speed, renderMode, sprites) {
+    constructor(x, y, height, width, color, speed, renderMode, sprites, world = null) {
         super(x, y, height, width, color, speed, renderMode);
 
         this.sprites = sprites;
@@ -9,6 +9,7 @@ class PlayerEntity extends Entity {
         this.lastDirection = "s";
         this.collideDirection = "";
         this.isSolid = true;
+        this.world = world;
     }
 
     input() {
@@ -48,12 +49,27 @@ class PlayerEntity extends Entity {
         }
     }
 
+    checkOutBoundaries() {
+        if (this.x > this.world.width * this.world.tileSize) {
+            this.world.nextMap("right");
+        }
+        else if (this.x + this.width < 0) {
+            this.world.nextMap("left");
+        }
+        else if (this.y > this.world.height * this.world.tileSize) {
+            this.world.nextMap("down");
+        }
+        else if (this.y + this.height < 0) {
+            this.world.nextMap("up");
+        }
+    }
+
     checkCollision(items) {
         const isColliding = items.find(el => {
             return el !== this && el.isSolid &&
-                this.x < el.x + el.width &&
+                this.x < (el.x + el.width) - 5 &&
                 this.x + this.width > el.x &&
-                this.y < el.y + el.height &&
+                this.y < (el.y + el.height) - 5 &&
                 this.y + this.height > el.y;
         });
 

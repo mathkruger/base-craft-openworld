@@ -8,41 +8,15 @@ class World {
 
         this.elements = [];
 
-        this.canvas.width = this.width * this.tileSize;
-        this.canvas.height = this.height * this.tileSize;
         this.renderer = new Renderer(canvas, this.elements);
 
         this.player = null;
-        this.map = [
-            ['T', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'T',],
-            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'G', ' ',],
-            [' ', ' ', 'G', 'G', ' ', ' ', ' ', 'G', ' ', ' ',],
-            [' ', ' ', 'G', 'G', ' ', ' ', ' ', ' ', ' ', ' ',],
-            [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',],
-            [' ', ' ', ' ', ' ', ' ', 'P', ' ', ' ', ' ', ' ',],
-            [' ', ' ', ' ', ' ', ' ', ' ', ' ', 'T', ' ', ' ',],
-            [' ', ' ', 'G', ' ', ' ', ' ', 'T', ' ', 'T', ' ',],
-            [' ', 'G', ' ', ' ', 'G', ' ', ' ', ' ', ' ', ' ',],
-            ['T', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'T',]
-        ];
+        this.map = new CustomMap();
+        this.interval = null;
     }
 
     start() {
-        console.table(this.map);
-        console.log("Game Start!");
-
-        this.create();
-        this.input();
-
-        console.log(this.elements);
-
-        setInterval(() => {
-            this.update();
-        }, this.fps);
-    }
-
-    create() {
-        this.createMap();
+        this.selectMap('map1');
     }
 
     input() {
@@ -52,7 +26,48 @@ class World {
     update() {
         this.player.move();
         this.player.checkCollision(this.elements);
+        this.player.checkOutBoundaries();
+
         this.renderer.render();
+    }
+
+    nextMap(direction) {
+        switch (direction) {
+            case "up": 
+                this.selectMap(this.map.nextMapUp);
+            break;
+
+            case "right": 
+                this.selectMap(this.map.nextMapRight);
+            break;
+
+            case "down": 
+                this.selectMap(this.map.nextMapDown);
+            break;
+
+            case "left": 
+                this.selectMap(this.map.nextMapLeft);
+            break;
+        }
+    }
+
+    selectMap(mapName) {
+        clearInterval(this.interval);
+
+        this.elements = [];
+        this.canvas.width = this.width * this.tileSize;
+        this.canvas.height = this.height * this.tileSize;
+
+        this.map.getMapFromJson(mapName).then(() => {
+            this.createMap();
+            this.input();
+
+            this.renderer.stack = this.elements;
+            
+            this.interval = setInterval(() => {
+                this.update();
+            }, this.fps);
+        });
     }
 
     createMap() {
@@ -69,30 +84,35 @@ class World {
 
         this.elements.push(new Entity(0, 0, this.height * this.tileSize, this.width * this.tileSize, "#70c8a0", 0, "rect"));
 
-        for (let x = 0; x < this.width * this.tileSize; x += this.tileSize) {
-            for (let y = 0; y < this.height * this.tileSize; y += this.tileSize) {
-                const indexX = (x / this.tileSize);
-                const indexY = (y / this.tileSize);
+        Object.keys(this.map.layers).forEach(key => {
+            for (let x = 0; x < this.width * this.tileSize; x += this.tileSize) {
+                for (let y = 0; y < this.height * this.tileSize; y += this.tileSize) {
+                    const indexX = (x / this.tileSize);
+                    const indexY = (y / this.tileSize);
+    
+                    switch (this.map.layers[key][indexY][indexX]) {
+                        case "P":
+                            if (this.player) {
+                                this.player.x = indexX * this.tileSize;
+                                this.player.y = indexY * this.tileSize;
+                            }
+                            else {
+                                this.player = new PlayerEntity(indexX * this.tileSize, indexY * this.tileSize, this.tileSize, this.tileSize, "", 5, "sprite", sprites.player, this);
+                            }
 
-                switch (this.map[indexY][indexX]) {
-                    case "G":
-                        this.elements.push(new Entity(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.grass));
+                            this.elements.push(this.player);
                         break;
-
-                    case "T":
-                        this.elements.push(new Entity(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.tree, true));
-                        break;
+    
+                        case "G":
+                            this.elements.push(new Entity(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.grass));
+                            break;
+    
+                        case "T":
+                            this.elements.push(new Entity(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.tree, true));
+                            break;
+                    }
                 }
             }
-        }
-
-        this.map.forEach((x, indexX) => {
-            this.map[indexX].forEach((y, indexY) => {
-                if (y === "P") {
-                    this.player = new PlayerEntity(indexX * this.tileSize, indexY * this.tileSize, this.tileSize, this.tileSize, "", 3, "sprite", sprites.player);
-                    this.elements.push(this.player);
-                }
-            });
-        });
+        })
     }
 } 
