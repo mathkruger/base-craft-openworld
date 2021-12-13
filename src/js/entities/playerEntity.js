@@ -4,26 +4,114 @@ class PlayerEntity extends Entity {
 
         this.sprites = sprites;
         this.sprite = this.sprites[0];
+        this.world = world;
 
         this.isMoving = false;
         this.lastDirection = "s";
         this.collideDirection = "";
         this.isSolid = true;
-        this.world = world;
         this.isWrapping = false;
+
+        this.isInventoryOpen = false;
+        this.inventory = new Inventory([], 10);
+
+        this.slots = {
+            tool: null
+        };
+
+        this.isUsingTool = false;
     }
 
     input() {
         document.addEventListener("keydown", (ev) => {
-            if (ev.key.toLowerCase() !== this.collideDirection) {
-                this.isMoving = true;
-                this.lastDirection = ev.key.toLowerCase();
+            if (['a', 's', 'w', 'd'].includes(ev.key.toLowerCase())) {
+                if (ev.key.toLowerCase() !== this.collideDirection) {
+                    this.isMoving = true;
+                    this.lastDirection = ev.key.toLowerCase();
+                }
+            }
+            else {
+                if (ev.key.toLowerCase() === 'i') {
+                    this.toggleInventory()
+                } else if (ev.key.toLowerCase() === 'x') {
+                    this.useTool();
+                }
             }
         });
 
         document.addEventListener("keyup", (ev) => {
             this.isMoving = false;
         });
+    }
+
+    inventoryInput() {
+        document.addEventListener("keydown", (ev) => {
+            if (this.isInventoryOpen) {
+                if (['w', 's', 'enter'].includes(ev.key.toLocaleLowerCase())) {
+                    const key = ev.key.toLowerCase();
+
+                    switch (key) {
+                        case "w":
+                            this.inventory.selectedItem = this.inventory.selectedItem == 0 ? 0 : this.inventory.selectedItem - 1;
+                        break;
+
+                        case "s":
+                            this.inventory.selectedItem = this.inventory.selectedItem == this.inventory.items.length - 1 ? this.inventory.selectedItem : this.inventory.selectedItem + 1;
+                        break;
+                        
+                        case "enter":
+                            this.inventory.useItem();    
+                        break;
+                    }
+
+                    this.world.updateInventory();
+                }
+            }
+        });
+    }
+
+    toggleInventory() {
+        this.isInventoryOpen = !this.isInventoryOpen;
+        this.inventory.selectedItem = 0;
+        if (this.isInventoryOpen) {
+            this.world.createInventory();
+        }
+        else {
+            this.world.destroyInventory();
+        }
+    }
+
+    useTool() {
+        switch (this.lastDirection) {
+            case "w":
+                this.slots.tool.x = this.x;
+                this.slots.tool.y = this.y - this.height - 10;
+            break;
+
+            case "s":
+                this.slots.tool.x = this.x;
+                this.slots.tool.y = this.y + this.height + 10;
+            break;
+
+            case "a":
+                this.slots.tool.y = this.y;
+                this.slots.tool.x = this.x - this.width - 10;
+            break;
+
+            case "d":
+                this.slots.tool.y = this.y;
+                this.slots.tool.x = this.x + this.width + 10;
+            break;
+             
+        }
+
+        this.isUsingTool = true;
+        this.world.elements.push(this.slots.tool);
+
+        setTimeout(() => {
+            this.world.elements.splice(this.world.elements.findIndex(x => x === this.slots.tool), 1);
+            this.isUsingTool = false;
+        }, 300);
     }
 
     move() {
@@ -81,23 +169,29 @@ class PlayerEntity extends Entity {
         });
 
         if (isColliding) {
-            this.isMoving = false;
-            this.collideDirection = this.lastDirection;
-            
-            if (this.lastDirection === "s") {
-                this.y -= this.speed;
+            if (isColliding instanceof Item && !this.isUsingTool) {
+                this.inventory.addItem(isColliding);
+                items.splice(items.findIndex(x => x === isColliding), 1);
             }
+            else {
+                this.isMoving = false;
+                this.collideDirection = this.lastDirection;
 
-            if (this.lastDirection === "a") {
-                this.x += this.speed;
-            }
+                if (this.lastDirection === "s") {
+                    this.y -= this.speed;
+                }
 
-            if (this.lastDirection === "d") {
-                this.x -= this.speed;
-            }
+                if (this.lastDirection === "a") {
+                    this.x += this.speed;
+                }
 
-            if (this.lastDirection === "w") {
-                this.y += this.speed;
+                if (this.lastDirection === "d") {
+                    this.x -= this.speed;
+                }
+
+                if (this.lastDirection === "w") {
+                    this.y += this.speed;
+                }
             }
         }
         else {

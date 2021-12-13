@@ -7,6 +7,7 @@ class World {
         this.fps = fps;
 
         this.elements = [];
+        this.inventoryElements = [];
 
         this.renderer = new Renderer(canvas, this.elements);
 
@@ -21,12 +22,15 @@ class World {
 
     input() {
         this.player.input();
+        this.player.inventoryInput();
     }
 
     update() {
-        this.player.move();
-        this.player.checkCollision(this.elements);
-        this.player.checkOutBoundaries();
+        if (!this.player.isInventoryOpen) {
+            this.player.move();
+            this.player.checkCollision(this.elements);
+            this.player.checkOutBoundaries();
+        }
 
         this.renderer.render();
     }
@@ -84,7 +88,19 @@ class World {
                 new Sprite(0, 0, this.tileSize, this.tileSize, "player-up")
             ],
             grass: new Sprite(0, 0, this.tileSize, this.tileSize, "grass"),
-            tree: new Sprite(0, 0, this.tileSize, this.tileSize, "tree")
+            tree: new Sprite(0, 0, this.tileSize, this.tileSize, "tree"),
+            potion: new Sprite(0, 0, this.tileSize, this.tileSize, "potion"),
+            sword: new Sprite(0, 0, this.tileSize, this.tileSize, "sword"),
+        }
+
+        const items = {
+            healthPotion: (x, y) => new Item(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.potion, true, 1, "Health Potion", 1, () => {
+                console.log("Oops");
+            }),
+            sword: (x, y) => new Item(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.sword, true, 1, "Sword", 1, () => {
+                this.player.slots.tool = this.player.inventory.items[this.player.inventory.selectedItem];
+                console.log(this.player.slots);
+            })
         }
 
         this.elements.push(new Entity(0, 0, this.height * this.tileSize, this.width * this.tileSize, this.map.backgroundColor, 0, "rect"));
@@ -111,9 +127,58 @@ class World {
                         case "T":
                             this.elements.push(new Entity(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.tree, true));
                             break;
+
+                        case "H":
+                            this.elements.push(items.healthPotion(x, y));
+                            break;
+
+                        case "S":
+                            this.elements.push(items.sword(x, y));
+                            break;
                     }
                 }
             }
         })
+    }
+
+    updateInventory() {
+        this.destroyInventory();
+        this.createInventory();
+    }
+
+    createInventory() {
+        const panelHeight = this.player.inventory.items.reduce((partial_sum, a) => partial_sum + a.height, 0) + (this.tileSize * 4)
+        const inventoryPanel = new Entity(3 * this.tileSize, 3 * this.tileSize, panelHeight, this.tileSize * 4, "#444444", 0, "rect");
+        this.inventoryElements.push(inventoryPanel);
+
+        this.player.inventory.items.forEach((item, index) => {
+            item.x = inventoryPanel.x + 5;
+            item.y = inventoryPanel.y + (index * this.tileSize) + 5;
+
+            this.inventoryElements.push(
+                new TextEntity(item.x + item.width,
+                    item.y + (item.height / 2),
+                    this.player.inventory.selectedItem === index ? "red" : "white",
+                    "12px serif",
+                    item.name + " x" + item.quantity
+                )
+            );
+            this.inventoryElements.push(item);
+        });
+
+        this.elements.push(...this.inventoryElements);
+
+        this.renderer.render();
+    }
+
+    destroyInventory() {
+        this.inventoryElements.forEach((x, index) => {
+            if (this.elements.includes(x)) {
+                this.elements.splice(this.elements.findIndex(y => y === x), 1);
+            }
+        });
+
+        this.inventoryElements = [];
+        this.renderer.render();
     }
 }

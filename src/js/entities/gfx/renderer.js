@@ -21,6 +21,10 @@ class Renderer {
                 case "sprite":
                     this.createImage(element);
                     break;
+
+                case "text":
+                    this.createText(element);
+                    break;
             }
         });
     }
@@ -41,6 +45,12 @@ class Renderer {
         const image = document.getElementById(sprite.id);
 
         this.context.drawImage(image, x, y, width, height);
+    }
+
+    createText({x, y, color, font, text}) {
+        this.context.font = font;
+        this.context.fillStyle = color;
+        this.context.fillText(text, x, y);
     }
 
     clearScreen(x = 0, y = 0, width = this.screenWidth, height = this.screenHeight) {
