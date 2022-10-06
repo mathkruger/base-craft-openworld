@@ -16,7 +16,7 @@ class PlayerEntity extends Entity {
         this.inventory = new Inventory([], 10);
 
         this.slots = {
-            tool: null
+            tool: new Entity()
         };
 
         this.isUsingTool = false;

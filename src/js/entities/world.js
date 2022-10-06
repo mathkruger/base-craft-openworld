@@ -17,7 +17,11 @@ class World {
     }
 
     start() {
-        this.selectMap('grassCity/map1');
+        this.selectMap('grassCity/map1', () => {
+            this.interval = setInterval(() => {
+                this.update();
+            }, this.fps);
+        });
     }
 
     input() {
@@ -59,7 +63,7 @@ class World {
         }
     }
 
-    selectMap(mapName) {
+    selectMap(mapName, gameLoop) {
         clearInterval(this.interval);
 
         this.elements = [];
@@ -73,9 +77,7 @@ class World {
             this.renderer.stack = this.elements;
             this.player.isWrapping = false;
 
-            this.interval = setInterval(() => {
-                this.update();
-            }, this.fps);
+            gameLoop();
         });
     }
 
@@ -88,18 +90,15 @@ class World {
                 new Sprite(0, 0, this.tileSize, this.tileSize, "player-up")
             ],
             grass: new Sprite(0, 0, this.tileSize, this.tileSize, "grass"),
-            tree: new Sprite(0, 0, this.tileSize, this.tileSize, "tree"),
-            potion: new Sprite(0, 0, this.tileSize, this.tileSize, "potion"),
-            sword: new Sprite(0, 0, this.tileSize, this.tileSize, "sword"),
+            tree: new Sprite(0, 0, this.tileSize, this.tileSize, "tree")
         }
 
         const items = {
-            healthPotion: (x, y) => new Item(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.potion, true, 1, "Health Potion", 1, () => {
-                console.log("Oops");
+            healthPotion: (x, y) => new HealthPotion(x, y, this.tileSize, this.tileSize, () => {
+                console.log("Yumyyyy");
             }),
-            sword: (x, y) => new Item(x, y, this.tileSize, this.tileSize, "", 0, "sprite", sprites.sword, true, 1, "Sword", 1, () => {
+            sword: (x, y) => new Sword(x, y, this.tileSize, this.tileSize, () => {
                 this.player.slots.tool = this.player.inventory.items[this.player.inventory.selectedItem];
-                console.log(this.player.slots);
             })
         }
 
@@ -149,7 +148,10 @@ class World {
     createInventory() {
         const panelHeight = this.player.inventory.items.reduce((partial_sum, a) => partial_sum + a.height, 0) + (this.tileSize * 4)
         const inventoryPanel = new Entity(3 * this.tileSize, 3 * this.tileSize, panelHeight, this.tileSize * 4, "#444444", 0, "rect");
+        const usedItemPanel = new Entity(inventoryPanel.x + inventoryPanel.width, inventoryPanel.y, 40, this.tileSize * 2, "#444444", 0, "rect");
+        
         this.inventoryElements.push(inventoryPanel);
+        this.inventoryElements.push(usedItemPanel);
 
         this.player.inventory.items.forEach((item, index) => {
             item.x = inventoryPanel.x + 5;
@@ -165,6 +167,15 @@ class World {
             );
             this.inventoryElements.push(item);
         });
+
+        this.inventoryElements.push(
+            new TextEntity(usedItemPanel.x + 5,
+                usedItemPanel.y + 5,
+                "red",
+                "12px serif",
+                this.player.slots.tool.name
+            )
+        );
 
         this.elements.push(...this.inventoryElements);
 
