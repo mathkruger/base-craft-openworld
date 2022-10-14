@@ -1,4 +1,4 @@
-const FPS = 20;
+const FPS = 60;
 const canvas = document.getElementById("main-game");
 const tileSize = 48;
 const width = 15;

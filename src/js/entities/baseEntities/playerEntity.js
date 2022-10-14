@@ -23,7 +23,7 @@ class PlayerEntity extends Entity {
     }
 
     input() {
-        document.addEventListener("keydown", (ev) => {
+        document.addEventListener("keypress", (ev) => {
             if (['a', 's', 'w', 'd'].includes(ev.key.toLowerCase())) {
                 if (ev.key.toLowerCase() !== this.collideDirection) {
                     this.isMoving = true;
@@ -33,7 +33,7 @@ class PlayerEntity extends Entity {
             else {
                 if (ev.key.toLowerCase() === 'i') {
                     this.toggleInventory()
-                } else if (ev.key.toLowerCase() === 'x') {
+                } else if (ev.key.toLowerCase() === ' ') {
                     this.useTool();
                 }
             }

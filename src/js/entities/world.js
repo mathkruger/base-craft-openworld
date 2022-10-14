@@ -6,6 +6,9 @@ class World {
         this.tileSize = tileSize;
         this.fps = fps;
 
+        this.lastTime = null;
+        this.requiredElapsed=1000/this.fps;
+
         this.elements = [];
         this.inventoryElements = [];
 
@@ -13,14 +16,29 @@ class World {
 
         this.player = null;
         this.map = new CustomMap();
-        this.interval = null;
+    }
+
+    loop(now) {
+        requestAnimationFrame((now) => {
+            this.loop(now);
+        });
+        
+        if(!this.lastTime){
+            this.lastTime = now;
+        }
+
+        const elapsed = this.lastTime + now;
+        if(elapsed > this.requiredElapsed){
+            this.update();
+            this.lastTime = now;
+        }
     }
 
     start() {
         this.selectMap('grassCity/map1', () => {
-            this.interval = setInterval(() => {
-                this.update();
-            }, this.fps);
+            requestAnimationFrame((now) => {
+                this.loop(now);
+            });
         });
     }
 
@@ -64,8 +82,6 @@ class World {
     }
 
     selectMap(mapName, gameLoop) {
-        clearInterval(this.interval);
-
         this.elements = [];
         this.canvas.width = this.width * this.tileSize;
         this.canvas.height = this.height * this.tileSize;
@@ -77,7 +93,9 @@ class World {
             this.renderer.stack = this.elements;
             this.player.isWrapping = false;
 
-            gameLoop();
+            if (gameLoop) {
+                gameLoop();
+            }
         });
     }
 
