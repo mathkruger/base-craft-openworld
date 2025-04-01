@@ -6,8 +6,8 @@ on:
       - master
 
 jobs:
-  build:
-    name: Build Project
+  build-and-deploy:
+    name: Build and Deploy Project
     runs-on: ubuntu-latest
 
     steps:
@@ -25,28 +25,8 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: dist/
-
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: dist
+          publish_dir: ./dist
